@@ -8,6 +8,7 @@ import type {
 } from "../interfaces/RickAndMortyAPI";
 import { useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
+import { Loader } from "../components/ui";
 
 interface Props {
     characters: Character[];
@@ -18,8 +19,11 @@ const Home: NextPage<Props> = ({
     characters: initialCharacters,
     nextPageURL: initialNextPageURL,
 }) => {
-    const [characters, setCharacters] = useState<Character[]>(initialCharacters);
-    const [nextPageURL, setNextPageURL] = useState<string | null>(initialNextPageURL);
+    const [characters, setCharacters] =
+        useState<Character[]>(initialCharacters);
+    const [nextPageURL, setNextPageURL] = useState<string | null>(
+        initialNextPageURL
+    );
 
     const fetchNextPage = async () => {
         if (!nextPageURL) {
@@ -29,7 +33,7 @@ const Home: NextPage<Props> = ({
         const response = await axios.get<CharacterResponse>(nextPageURL);
         setCharacters([...characters, ...response.data.results]);
         setNextPageURL(response.data.info.next);
-    }
+    };
 
     return (
         <div>
@@ -51,7 +55,17 @@ const Home: NextPage<Props> = ({
                         <InfiniteScroll
                             next={fetchNextPage}
                             hasMore={!!nextPageURL}
-                            loader={<div>Loading...</div>}
+                            loader={
+                                <Loader
+                                    properties={{
+                                        size: "40px",
+                                        weight: "5px",
+                                    }}
+                                    style={{
+                                        margin: "0px auto",
+                                    }}
+                                />
+                            }
                             dataLength={characters.length}
                             endMessage={
                                 <p style={{ textAlign: "center" }}>
