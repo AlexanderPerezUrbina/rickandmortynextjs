@@ -1,43 +1,133 @@
+import type { GetStaticProps, NextPage } from "next";
+import Head from "next/head";
 import axios from "axios";
-import type { GetStaticProps, NextPage } from 'next';
-import type { Character, CharacterResponse } from "../../interfaces/RickAndMortyAPI";
+import Image from "next/image";
+import {
+    getGender,
+    getSpecies,
+    getStatus,
+} from "../../helpers/getCharacterData";
+import {
+    Character,
+    CharacterResponse,
+    Episode,
+    Location,
+} from "../../interfaces/RickAndMortyAPI";
+import { Modify } from "../../interfaces/Utilities";
 
 interface Props {
-    character: Character;
+    character: CharacterWithAllData;
 }
 
-const Character: NextPage<Props> = ({ character }) => {
+interface CharacterWithAllData
+    extends Modify<
+        Character,
+        {
+            episodes: Episode[];
+            location: Location;
+            origin: Location;
+            status: {
+                message: string;
+                color: string;
+            };
+        }
+    > {}
+
+const Character: NextPage<Props> = ({
+    character: {
+        name,
+        status,
+        gender,
+        species,
+        image,
+        episodes,
+        location,
+        origin,
+    },
+}) => {
     return (
-        <div>{JSON.stringify(character, null, 4)}</div>
+        <>
+            <Head>
+                <title>{name} | RickAndMortyAPI</title>
+            </Head>
+            <h1>{name}</h1>
+            <Image width={300} height={300} src={image} alt={name} />
+            <h2 style={{ backgroundColor: status.color }}>{status.message}</h2>
+            <h2>{gender}</h2>
+            <h2>{species}</h2>
+            <h3>Location</h3>
+            <p>{location.name}</p>
+            {/* <p>{location.url}</p> */}
+
+            <h3>Episodes</h3>
+            {episodes.map((episode) => (
+                <p key={episode.id}>{episode.name}</p>
+            ))}
+
+            <h3>Origin</h3>
+            <p>{origin.residents[0]}</p>
+            <p>{origin.url}</p>
+        </>
     );
 };
 
 export const getStaticPaths = async () => {
-    const response = await axios.get<CharacterResponse>('https://rickandmortyapi.com/api/character?page=1');
+    const response = await axios.get<CharacterResponse>(
+        "https://rickandmortyapi.com/api/character?page=1"
+    );
 
     return {
-        paths: response.data.results.map(character => ({
+        paths: response.data.results.map((character) => ({
             params: {
-                id: character.id.toString()
-            }
+                id: character.id.toString(),
+            },
         })),
-        fallback: 'blocking'
-    }
-}
+        fallback: "blocking",
+    };
+};
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
     try {
-        const response = await axios.get<Character>(`https://rickandmortyapi.com/api/character/${params?.id}`);
+        const response = await axios.get<Character>(
+            `https://rickandmortyapi.com/api/character/${params?.id}`
+        );
+
+        const episodes = await Promise.all(
+            response.data.episode.map(async (episode) => {
+                const episodeResponse = await axios.get<Episode>(episode);
+                return episodeResponse.data;
+            })
+        );
+
+        const locationResponse = await axios.get<Location>(
+            response.data.location.url
+        );
+        const location = locationResponse.data;
+
+        const originResponse = await axios.get<Location>(
+            response.data.origin.url
+        );
+
+        const origin = originResponse.data;
+
         return {
             props: {
-                character: response.data
-            }
-        }
+                character: {
+                    ...response.data,
+                    status: getStatus(response.data.status),
+                    gender: getGender(response.data.gender),
+                    species: getSpecies(response.data.species),
+                    episodes,
+                    location,
+                    origin,
+                },
+            },
+        };
     } catch (error) {}
 
     return {
-        notFound: true
-    }
-}
+        notFound: true,
+    };
+};
 
 export default Character;

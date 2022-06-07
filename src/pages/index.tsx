@@ -1,18 +1,16 @@
 import axios from "axios";
 import Head from "next/head";
-import Image from "next/image";
 import type { NextPage } from "next";
 import type {
     Character,
     CharacterResponse,
-    Status,
 } from "../interfaces/RickAndMortyAPI";
 import { useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { CharacterCard, Loader } from "../components/ui";
-import Link from "next/link";
 
 import styles from '../styles/Home.module.css';
+import { scrollToTop } from "../helpers/scroll";
 
 interface Props {
     characters: Character[];
@@ -35,13 +33,6 @@ const Home: NextPage<Props> = ({
         setCharacters([...characters, ...response.data.results]);
         setNextPageURL(response.data.info.next);
     };
-
-    const scrollToTop = () => {
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth",
-        });
-    }
 
     return (
         <div>

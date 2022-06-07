@@ -2,22 +2,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { FC, HTMLAttributes } from "react";
 import {
-    Status,
-    Gender,
     Character,
-    Species,
 } from "../../../interfaces/RickAndMortyAPI";
 import {
     getGender,
     getSpecies,
     getStatus,
 } from "../../../helpers/getCharacterData";
-
 interface Props extends HTMLAttributes<HTMLDivElement> {
     character: Character;
 }
 
-const Card: FC<Props> = ({
+const CharacterCard: FC<Props> = ({
     character: { status, image, name, gender, species, id },
     ...otherProps
 }) => {
@@ -118,4 +114,4 @@ const Card: FC<Props> = ({
     );
 };
 
-export default Card;
+export default CharacterCard;
