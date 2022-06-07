@@ -5,10 +5,14 @@ import type { NextPage } from "next";
 import type {
     Character,
     CharacterResponse,
+    Status,
 } from "../interfaces/RickAndMortyAPI";
 import { useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { Loader } from "../components/ui";
+import { CharacterCard, Loader } from "../components/ui";
+import Link from "next/link";
+
+import styles from '../styles/Home.module.css';
 
 interface Props {
     characters: Character[];
@@ -19,11 +23,8 @@ const Home: NextPage<Props> = ({
     characters: initialCharacters,
     nextPageURL: initialNextPageURL,
 }) => {
-    const [characters, setCharacters] =
-        useState<Character[]>(initialCharacters);
-    const [nextPageURL, setNextPageURL] = useState<string | null>(
-        initialNextPageURL
-    );
+    const [characters, setCharacters] = useState<Character[]>(initialCharacters);
+    const [nextPageURL, setNextPageURL] = useState<string | null>(initialNextPageURL);
 
     const fetchNextPage = async () => {
         if (!nextPageURL) {
@@ -34,6 +35,13 @@ const Home: NextPage<Props> = ({
         setCharacters([...characters, ...response.data.results]);
         setNextPageURL(response.data.info.next);
     };
+
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+    }
 
     return (
         <div>
@@ -49,45 +57,53 @@ const Home: NextPage<Props> = ({
             <main>
                 <h1>Rick and Morty API</h1>
 
+                <button className={styles.btnScrollToTop} onClick={scrollToTop} >A</button>
+
                 <div>
-                    <h2>Characters</h2>
-                    <ul>
-                        <InfiniteScroll
-                            next={fetchNextPage}
-                            hasMore={!!nextPageURL}
-                            loader={
-                                <Loader
-                                    properties={{
-                                        size: "40px",
-                                        weight: "5px",
-                                    }}
-                                    style={{
-                                        margin: "0px auto",
-                                    }}
-                                />
-                            }
-                            dataLength={characters.length}
-                            endMessage={
-                                <p style={{ textAlign: "center" }}>
-                                    <b>Yay! You have seen it all</b>
-                                </p>
-                            }
+                    <h2>Personajes</h2>
+                    <InfiniteScroll
+                        next={fetchNextPage}
+                        hasMore={!!nextPageURL}
+                        loader={
+                            <Loader
+                                properties={{
+                                    size: "40px",
+                                    weight: "5px",
+                                }}
+                                style={{
+                                    margin: "20px auto",
+                                }}
+                            />
+                        }
+                        dataLength={characters.length}
+                        endMessage={
+                            <p style={{ textAlign: "center" }}>
+                                <b>Yay! You have seen it all</b>
+                            </p>
+                        }
+                        style={{
+                            overflow: "hidden",
+                            padding: "20px",
+                        }}
+                    >
+                        <div
+                            style={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                justifyContent: "center",
+                            }}
                         >
                             {characters.map((character) => (
-                                <li key={character.id}>
-                                    <a href={`/character/${character.id}`}>
-                                        {character.name}
-                                    </a>
-                                    <Image
-                                        src={character.image}
-                                        alt={character.name}
-                                        width={200}
-                                        height={200}
-                                    />
-                                </li>
+                                <CharacterCard
+                                    key={character.id}
+                                    character={character}
+                                    style={{
+                                        margin: "10px",
+                                    }}
+                                />
                             ))}
-                        </InfiniteScroll>
-                    </ul>
+                        </div>
+                    </InfiniteScroll>
                 </div>
             </main>
         </div>

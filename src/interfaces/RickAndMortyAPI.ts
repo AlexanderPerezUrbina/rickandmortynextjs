@@ -29,6 +29,7 @@ export enum Gender {
     Female = "Female",
     Male = "Male",
     Unknown = "unknown",
+    Genderless = "Genderless"
 }
 
 export interface CharacterLocation {
@@ -39,6 +40,14 @@ export interface CharacterLocation {
 export enum Species {
     Alien = "Alien",
     Human = "Human",
+    Humanoid = "Humanoid",
+    Unknown = "unknown",
+    Poopybutthole = "Poopybutthole",
+    'Mythological Creature' = "Mythological Creature",
+    Animal = "Animal",
+    Robot = "Robot",
+    Cronenberg = "Cronenberg",
+    Disease = "Disease",
 }
 
 export enum Status {
