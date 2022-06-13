@@ -4,7 +4,14 @@ import Head from "next/head";
 import { CharacterInfiniteList } from "../components/character";
 import { BtnScrollToTop } from "../components/ui";
 
+import { useTheme as useNextTheme } from "next-themes";
+import { useTheme } from "@nextui-org/react";
+
 const Home: NextPage = () => {
+
+    const { setTheme } = useNextTheme();
+    const { isDark } = useTheme();
+
     return (
         <div>
             <Head>
@@ -20,6 +27,8 @@ const Home: NextPage = () => {
                 <h1>Rick and Morty API</h1>
 
                 <BtnScrollToTop />
+
+                <button onClick={() => setTheme(isDark ? 'light' : 'dark')}>Change to {isDark ? 'light': 'dark'}</button>
 
                 <div>
                     <h2>Personajes</h2>
