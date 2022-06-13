@@ -13,6 +13,7 @@ import {
     Episode,
     Location,
 } from "../../interfaces/RickAndMortyAPI";
+
 import { Modify } from "../../interfaces/Utilities";
 
 interface Props {
@@ -23,9 +24,9 @@ interface CharacterWithAllData
     extends Modify<
         Character,
         {
-            episodes: Episode[];
-            location: Location;
-            origin: Location;
+            episodes: Episode[] | null;
+            location: Location | null;
+            origin: Location | null;
             status: {
                 message: string;
                 color: string;
@@ -56,17 +57,16 @@ const Character: NextPage<Props> = ({
             <h2>{gender}</h2>
             <h2>{species}</h2>
             <h3>Location</h3>
-            <p>{location.name}</p>
-            {/* <p>{location.url}</p> */}
+            <p>{location && location.name}</p>
 
             <h3>Episodes</h3>
-            {episodes.map((episode) => (
+            {episodes && episodes.map((episode) => (
                 <p key={episode.id}>{episode.name}</p>
             ))}
 
             <h3>Origin</h3>
-            <p>{origin.residents[0]}</p>
-            <p>{origin.url}</p>
+            {/* <p>{origin && origin.residents[0]}</p> */}
+            <p>{origin && origin.url}</p>
         </>
     );
 };
@@ -82,7 +82,7 @@ export const getStaticPaths = async () => {
                 id: character.id.toString(),
             },
         })),
-        fallback: "blocking",
+        fallback: 'blocking',
     };
 };
 
@@ -92,23 +92,46 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
             `https://rickandmortyapi.com/api/character/${params?.id}`
         );
 
-        const episodes = await Promise.all(
-            response.data.episode.map(async (episode) => {
-                const episodeResponse = await axios.get<Episode>(episode);
-                return episodeResponse.data;
-            })
-        );
+        const getEpisodes = async (): Promise<Episode[] | null> => {
+            try {
+                return Promise.all(
+                    response.data.episode.map(async (episode) => {
+                        const episodeResponse = await axios.get<Episode>(
+                            episode
+                        );
+                        return episodeResponse.data;
+                    })
+                );
+            } catch (error) {
+                return null;
+            }
+        };
 
-        const locationResponse = await axios.get<Location>(
-            response.data.location.url
-        );
-        const location = locationResponse.data;
+        const getLocation = async (): Promise<Location | null> => {
+            try {
+                const locationResponse = await axios.get<Location>(
+                    response.data.location.url
+                );
+                return locationResponse.data;
+            } catch (error) {
+                return null;
+            }
+        };
 
-        const originResponse = await axios.get<Location>(
-            response.data.origin.url
-        );
+        const getOrigin = async (): Promise<Location | null> => {
+            try {
+                const originResponse = await axios.get<Location>(
+                    response.data.origin.url
+                );
+                return originResponse.data;
+            } catch (error) {
+                return null;
+            }
+        };
 
-        const origin = originResponse.data;
+        const episodes = await getEpisodes();
+        const location = await getLocation();
+        const origin = await getOrigin();
 
         return {
             props: {

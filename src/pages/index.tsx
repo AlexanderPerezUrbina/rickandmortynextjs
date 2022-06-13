@@ -1,39 +1,10 @@
-import axios from "axios";
-import Head from "next/head";
 import type { NextPage } from "next";
-import type {
-    Character,
-    CharacterResponse,
-} from "../interfaces/RickAndMortyAPI";
-import { useState } from "react";
-import InfiniteScroll from "react-infinite-scroll-component";
-import { CharacterCard, Loader } from "../components/ui";
+import Head from "next/head";
 
-import styles from '../styles/Home.module.css';
-import { scrollToTop } from "../helpers/scroll";
+import { CharacterInfiniteList } from "../components/character";
+import { BtnScrollToTop } from "../components/ui";
 
-interface Props {
-    characters: Character[];
-    nextPageURL: string;
-}
-
-const Home: NextPage<Props> = ({
-    characters: initialCharacters,
-    nextPageURL: initialNextPageURL,
-}) => {
-    const [characters, setCharacters] = useState<Character[]>(initialCharacters);
-    const [nextPageURL, setNextPageURL] = useState<string | null>(initialNextPageURL);
-
-    const fetchNextPage = async () => {
-        if (!nextPageURL) {
-            return;
-        }
-
-        const response = await axios.get<CharacterResponse>(nextPageURL);
-        setCharacters([...characters, ...response.data.results]);
-        setNextPageURL(response.data.info.next);
-    };
-
+const Home: NextPage = () => {
     return (
         <div>
             <Head>
@@ -48,70 +19,15 @@ const Home: NextPage<Props> = ({
             <main>
                 <h1>Rick and Morty API</h1>
 
-                <button className={styles.btnScrollToTop} onClick={scrollToTop} >A</button>
+                <BtnScrollToTop />
 
                 <div>
                     <h2>Personajes</h2>
-                    <InfiniteScroll
-                        next={fetchNextPage}
-                        hasMore={!!nextPageURL}
-                        loader={
-                            <Loader
-                                properties={{
-                                    size: "40px",
-                                    weight: "5px",
-                                }}
-                                style={{
-                                    margin: "20px auto",
-                                }}
-                            />
-                        }
-                        dataLength={characters.length}
-                        endMessage={
-                            <p style={{ textAlign: "center" }}>
-                                <b>Yay! You have seen it all</b>
-                            </p>
-                        }
-                        style={{
-                            overflow: "hidden",
-                            padding: "20px",
-                        }}
-                    >
-                        <div
-                            style={{
-                                display: "flex",
-                                flexWrap: "wrap",
-                                justifyContent: "center",
-                            }}
-                        >
-                            {characters.map((character) => (
-                                <CharacterCard
-                                    key={character.id}
-                                    character={character}
-                                    style={{
-                                        margin: "10px",
-                                    }}
-                                />
-                            ))}
-                        </div>
-                    </InfiniteScroll>
+                    <CharacterInfiniteList charactersURL="https://rickandmortyapi.com/api/character?page=1" />
                 </div>
             </main>
         </div>
     );
-};
-
-export const getStaticProps = async () => {
-    const response = await axios.get<CharacterResponse>(
-        "https://rickandmortyapi.com/api/character?page=1"
-    );
-
-    return {
-        props: {
-            characters: response.data.results,
-            nextPageURL: response.data.info.next,
-        },
-    };
 };
 
 export default Home;

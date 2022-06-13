@@ -1,2 +1,5 @@
 export {default as Loader} from './Loader';
-export {default as CharacterCard} from './CharacterCard';
+export * from './Loader';
+
+export {default as BtnScrollToTop} from './BtnScrollToTop';
+export * from './BtnScrollToTop';
